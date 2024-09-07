@@ -23,6 +23,7 @@ const App = () => {
   const [errorMessage, setErrorMessage] = useState('');
   const [copySuccess, setCopySuccess] = useState('');
   const [customerLink, setCustomerLink] = useState(null);
+  const [qrChecked, setQrChecked] = useState(false); // QRコード読み取り確認用
 
   // 各入力フィールドのエラー状態を判定するための変数
   const hasNameError = errorMessage.includes('顧客名');
@@ -31,6 +32,14 @@ const App = () => {
   const hasEmailError = errorMessage.includes('メールアドレス');
   // const hasItemCountError = errorMessage.includes('商品点数');
   const hasContactMethodError = errorMessage.includes('仮査定の手段を選択してください');
+
+  const containerStyle = {
+    maxWidth: '640px',
+  };
+
+  const logoStyle = {
+    width: '160px',
+  };
 
 
   useEffect(() => {
@@ -128,9 +137,9 @@ const App = () => {
   };
 
   return (
-    <Container className="mt-4 container-sm">
+    <Container className="py-5 container-sm container" style={containerStyle}>
       <div className="text-center">
-        <img src={stockLogoImage} alt="株式会社ストックラボのロゴ" />;
+        <img src={stockLogoImage} alt="株式会社ストックラボのロゴ" style={logoStyle}/>;
       </div>
       <h1 className="text-center py-4">一次請けメッセージつくる君</h1>
 
@@ -176,10 +185,10 @@ const App = () => {
             isInvalid={hasItemCountError} // エラー状態の適用
           >
             <option value="0">0</option> {/* 0の選択肢を追加 */}
-            {[...Array(9).keys()].map(n => (
+            {[...Array(29).keys()].map(n => (
               <option key={n} value={n + 1}>{n + 1}</option>
             ))}
-            <option value="10+">10以上</option>
+            <option value="30+">30以上</option>
           </Form.Select>
           {hasItemCountError && <Form.Control.Feedback type="invalid">商品点数を選択してください。</Form.Control.Feedback>}
         </div>
@@ -247,11 +256,23 @@ const App = () => {
           {contactMethod === 'LINE' && (
             <>
               <Alert variant="success mt-3">
-                店頭QRの読み込みをお願いします。
-                {/* This is a {variant} alert—check it out! */}
+                <div className="form-check form-switch">
+                  <input
+                    className="form-check-input"
+                    type="checkbox"
+                    role="switch"
+                    id="flexSwitchCheckQR"
+                    checked={qrChecked}
+                    onChange={(e) => setQrChecked(e.target.checked)} // スイッチの状態を管理
+                  />
+                  <label className="form-check-label" htmlFor="flexSwitchCheckQR">
+                    来店QRコードを読み取りました。
+                  </label>
+                </div>
               </Alert>
             </>
           )}
+
 
           {/* メールアドレス入力フィールド（メールを選択した場合に表示） */}
           {contactMethod === 'email' && (
@@ -274,7 +295,15 @@ const App = () => {
 
       {/* 入力内容を更新するボタン */}
       <div class="d-block text-center pt-4">
-        <Button variant="primary" size="lg" type="submit" onClick={updateSummary}>一次請けメッセージを作ってコピーする</Button>
+        <Button
+          variant="primary"
+          size="lg"
+          type="submit"
+          onClick={updateSummary}
+          disabled={temporaryAssessment === 'yes' && contactMethod === 'LINE' && !qrChecked} // LINEでチェックボックスがオンになるまで無効
+        >
+          一次請けメッセージを作ってコピーする
+        </Button>
       </div>
 
       {/* 入力内容をリセットするボタン */}
@@ -296,12 +325,8 @@ const App = () => {
         </Alert>
       }
 
-      <div className="py-4">
-        <hr />
-      </div>
-
       {/* 入力内容の自動出力 */}
-      <p style={{ whiteSpace: 'pre-wrap' }}>{inputSummary}</p>
+      {/* <p style={{ whiteSpace: 'pre-wrap' }}>{inputSummary}</p> */}
 
       <Row className='mb-4'>
         <div>{customerLink}</div>
