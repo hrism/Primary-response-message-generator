@@ -24,6 +24,7 @@ const App = () => {
   const [copySuccess, setCopySuccess] = useState('');
   const [customerLink, setCustomerLink] = useState(null);
   const [qrChecked, setQrChecked] = useState(false); // QRコード読み取り確認用
+  const [alertVariant, setAlertVariant] = useState('info'); // Alertのクラスを管理するステート
 
   // 各入力フィールドのエラー状態を判定するための変数
   const hasNameError = errorMessage.includes('顧客名');
@@ -32,6 +33,23 @@ const App = () => {
   const hasEmailError = errorMessage.includes('メールアドレス');
   // const hasItemCountError = errorMessage.includes('商品点数');
   const hasContactMethodError = errorMessage.includes('仮査定の手段を選択してください');
+
+  // ボタンが無効な場合のクリック処理
+  const handleButtonClick = (e) => {
+    if (temporaryAssessment === 'yes' && contactMethod === 'LINE' && !qrChecked) {
+      e.preventDefault();
+      window.alert('QRコードを読み取ってチェックマークをつけてください。');
+      setAlertVariant('danger'); // 警告をdangerに設定
+    } else {
+      updateSummary(); // QRコード確認済みなら通常の処理を実行
+    }
+  };
+
+  // QRコード確認スイッチの変更ハンドラー
+  const handleQrCheck = (e) => {
+    setQrChecked(e.target.checked);
+    setAlertVariant(e.target.checked ? 'success' : 'danger'); // チェックされたらsuccess、外されたらdanger
+  };
 
   const containerStyle = {
     maxWidth: '640px',
@@ -139,7 +157,7 @@ const App = () => {
   return (
     <Container className="py-5 container-sm container" style={containerStyle}>
       <div className="text-center">
-        <img src={stockLogoImage} alt="株式会社ストックラボのロゴ" style={logoStyle}/>;
+        <img src={stockLogoImage} alt="株式会社ストックラボのロゴ" style={logoStyle} />;
       </div>
       <h1 className="text-center py-4">一次請けメッセージつくる君</h1>
 
@@ -255,7 +273,8 @@ const App = () => {
 
           {contactMethod === 'LINE' && (
             <>
-              <Alert variant="success mt-3">
+              {/* AlertのvariantをqrCheckedの状態に基づいて動的に変更 */}
+              <Alert variant={qrChecked ? "success" : "danger"} className="mt-3">
                 <div className="form-check form-switch">
                   <input
                     className="form-check-input"
@@ -272,6 +291,7 @@ const App = () => {
               </Alert>
             </>
           )}
+
 
 
           {/* メールアドレス入力フィールド（メールを選択した場合に表示） */}
@@ -295,15 +315,27 @@ const App = () => {
 
       {/* 入力内容を更新するボタン */}
       <div class="d-block text-center pt-4">
-        <Button
-          variant="primary"
-          size="lg"
-          type="submit"
-          onClick={updateSummary}
-          disabled={temporaryAssessment === 'yes' && contactMethod === 'LINE' && !qrChecked} // LINEでチェックボックスがオンになるまで無効
+        <div
+          className="d-inline-block"  // Bootstrapのクラスでinline-blockを適用
+          onClick={(e) => {
+            if (temporaryAssessment === 'yes' && contactMethod === 'LINE' && !qrChecked) {
+              e.preventDefault(); // ボタンのクリックイベントを防止
+              window.alert('QRコードを読み取ったことを確認してください。');
+            } else {
+              updateSummary(); // QRコード確認済みなら通常の処理を実行
+            }
+          }}
         >
-          一次請けメッセージを作ってコピーする
-        </Button>
+          <Button
+            variant="primary"
+            size="lg"
+            type="submit"
+            onClick={updateSummary}
+            disabled={temporaryAssessment === 'yes' && contactMethod === 'LINE' && !qrChecked} // LINEでチェックボックスがオンになるまで無効
+          >
+            一次請けメッセージを作ってコピーする
+          </Button>
+        </div>
       </div>
 
       {/* 入力内容をリセットするボタン */}
