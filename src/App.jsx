@@ -11,7 +11,6 @@ const App = () => {
   const [customerName, setCustomerName] = useState('');
   const [customerType, setCustomerType] = useState(''); // 顧客区分
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [memberNumber, setMemberNumber] = useState('');
   const [temporaryAssessment, setTemporaryAssessment] = useState(''); // 仮査定有無
   const [contactMethod, setContactMethod] = useState(''); // 'LINE', 'email', 'phone'
   const [itemCount, setItemCount] = useState('0');
@@ -21,15 +20,16 @@ const App = () => {
   const [customerLink, setCustomerLink] = useState(null);
   const [qrChecked, setQrChecked] = useState(false); // QRコード確認用
   const [alertVariant, setAlertVariant] = useState('info'); // Alertのクラスを管理するステート
-  const [phoneNumberError, setPhoneNumberError] = useState(''); // 電話番号のエラーステート
-  const [emailError, setEmailError] = useState(''); // メールアドレスのエラーステート
-  const [contactMethodError, setContactMethodError] = useState(''); // 仮査定手段のエラーステート
 
   // エラーメッセージの管理
   const [customerNameError, setCustomerNameError] = useState(''); // 顧客名のエラー
   const [customerTypeError, setCustomerTypeError] = useState(''); // 顧客区分のエラー
   const [temporaryAssessmentError, setTemporaryAssessmentError] = useState(''); // 仮査定有無のエラー
   const [itemCountError, setItemCountError] = useState(''); // 商品点数エラー
+  const [phoneNumberError, setPhoneNumberError] = useState(''); // 電話番号のエラーステート
+  const [emailError, setEmailError] = useState(''); // メールアドレスのエラーステート
+  const [contactMethodError, setContactMethodError] = useState(''); // 仮査定手段のエラーステート
+
 
   const containerStyle = {
     maxWidth: '640px',
@@ -38,31 +38,6 @@ const App = () => {
   const logoStyle = {
     width: '160px',
   };
-
-  // ボタンが無効な場合のクリック処理
-  const handleButtonClick = (e) => {
-    if (temporaryAssessment === 'yes' && contactMethod === 'LINE' && !qrChecked) {
-      e.preventDefault();
-      window.alert('QRコードを読み取ってチェックマークをつけてください。');
-      setAlertVariant('danger'); // 警告をdangerに設定
-    } else {
-      updateSummary(); // QRコード確認済みなら通常の処理を実行
-    }
-  };
-
-  // QRコード確認スイッチの変更ハンドラー
-  const handleQrCheck = (e) => {
-    setQrChecked(e.target.checked);
-    setAlertVariant(e.target.checked ? 'success' : 'danger'); // チェックされたらsuccess、外されたらdanger
-  };
-
-  useEffect(() => {
-    // 電話番号をハイフンなしの半角に変換
-    const cleanedPhoneNumber = phoneNumber
-      .replace(/-/g, '') // ハイフンを削除
-      .replace(/[０-９]/g, s => String.fromCharCode(s.charCodeAt(0) - 0xFEE0)); // 全角を半角に変換
-    setPhoneNumber(cleanedPhoneNumber);
-  }, [phoneNumber]);
 
   const updateSummary = () => {
     let hasError = false;
@@ -73,27 +48,6 @@ const App = () => {
       hasError = true;
     } else {
       setContactMethodError(''); // エラーなし
-    }
-
-    // 仮査定手段がメールで、メールアドレスが空白の場合はエラーを表示
-    if (temporaryAssessment === 'yes' && contactMethod === 'email' && !emailOrPhone.trim()) {
-      setEmailError('仮査定手段がメールの場合、メールアドレスを入力してください。');
-      hasError = true;
-    } else {
-      setEmailError(''); // エラーなし
-    }
-
-    // 既存顧客で電話番号が空白の場合はエラーを表示
-    if (customerType === 'existing' && !phoneNumber.trim()) {
-      setPhoneNumberError('「電話番号」を入力してください。');
-      hasError = true;
-    }
-    // 仮査定手段が電話で、電話番号が空白の場合はエラーを表示
-    else if (temporaryAssessment === 'yes' && contactMethod === 'phone' && !phoneNumber.trim()) {
-      setPhoneNumberError('仮査定手段が電話の場合、電話番号を入力してください。');
-      hasError = true;
-    } else {
-      setPhoneNumberError(''); // エラーなし
     }
 
     // 顧客名が空白の場合はエラーを表示
@@ -128,37 +82,58 @@ const App = () => {
       setItemCountError(''); // エラーなし
     }
 
+    // 既存顧客で電話番号が入力されていない場合のエラー
+    if (customerType === 'existing' && !phoneNumber.trim()) {
+      setPhoneNumberError('「電話番号」を入力してください。');
+      hasError = true;
+    } else {
+      setPhoneNumberError(''); // エラーなし
+    }
+
+    // 仮査定手段が電話で、電話番号が入力されていない場合のエラー
+    if (temporaryAssessment === 'yes' && contactMethod === 'phone' && !phoneNumber.trim()) {
+      setPhoneNumberError('仮査定手段が電話の場合、電話番号を入力してください。');
+      hasError = true;
+    }
+
+    // 仮査定手段がメールで、メールアドレスが入力されていない場合のエラー
+    if (temporaryAssessment === 'yes' && contactMethod === 'email' && !emailOrPhone.trim()) {
+      setEmailError('仮査定手段がメールの場合、メールアドレスを入力してください。');
+      hasError = true;
+    } else {
+      setEmailError(''); // エラーなし
+    }
+
     // エラーがある場合は処理を中断
     if (hasError) return;
 
-    // URLの生成と設定
-    if (customerType === 'existing' && phoneNumber.trim()) {
-      const url = `https://app.recore-pos.com/member/list/?keyword=${encodeURIComponent(phoneNumber)}`;
-      setCustomerLink(<a href={url} target="_blank" rel="noopener noreferrer">顧客候補：{url}</a>);
-    } else {
-      setCustomerLink(null);
-    }
+    // 既存の顧客で電話番号が入力されている場合のURLを生成
+    const customerCandidateUrl = customerType === 'existing' && phoneNumber.trim()
+      ? `顧客候補URL: https://app.recore-pos.com/member/list/?keyword=${encodeURIComponent(phoneNumber)}`
+      : '';
 
+    // 入力内容に基づいてチャットメッセージの内容を更新する処理
     const summary = [
       '`[toall]`\nお客様がご来店しました。',
       `顧客名: ${customerName}`,
       `顧客タイプ: ${customerType === 'new' ? '新規顧客' : '既存顧客'}`,
       `電話番号: ${phoneNumber}`,
-      customerType === 'existing' ? `会員番号: ${memberNumber}` : '',
       `仮査定: ${temporaryAssessment === 'yes' ? 'あり' : 'なし'}`,
       temporaryAssessment === 'yes' ? `仮査定手段: ${contactMethod}` : '',
       temporaryAssessment === 'yes' && contactMethod === 'email' ? `メールアドレス: ${emailOrPhone}` : '',
       `商品点数: ${itemCount}`,
+      customerCandidateUrl,  // 顧客候補のURLをメッセージに含める
       `これより写真をお送ります。査定対応お願いします。`,
-    ].filter(Boolean).join('\n');
-    setInputSummary(summary);
+    ].filter(Boolean).join('\n');  // filter(Boolean) で空の要素を削除
+
+    setInputSummary(summary);  // summary に生成したメッセージをセット
 
     // コピー処理
     navigator.clipboard.writeText(summary)
       .then(() => {
-        console.log('コピー成功'); // コピー成功時のログ
+        console.log('コピー成功');  // コピー成功時のログ
         setCopySuccess('コピーしたのでチャットに送信してください！');
-        setTimeout(() => setCopySuccess(''), 10000);
+        setTimeout(() => setCopySuccess(''), 10000);  // 10秒後にメッセージを消す
       })
       .catch(err => {
         console.error('コピーに失敗しました: ', err);
@@ -217,12 +192,11 @@ const App = () => {
             placeholder="090XXXXXXXX"
             value={phoneNumber}
             onChange={(e) => setPhoneNumber(e.target.value)}
-            isInvalid={!!phoneNumberError} // エラーがあれば表示
+            isInvalid={!!phoneNumberError}
           />
           {phoneNumberError && <Form.Control.Feedback type="invalid">{phoneNumberError}</Form.Control.Feedback>}
         </Form.Group>
       </Row>
-
 
       {/* 持込商品点数（必須） */}
       <Row className='mb-4'>
@@ -260,7 +234,6 @@ const App = () => {
         </div>
       </Row>
 
-
       {/* 仮査定手段の選択 */}
       {temporaryAssessment === 'yes' && (
         <>
@@ -291,7 +264,7 @@ const App = () => {
                     role="switch"
                     id="flexSwitchCheckQR"
                     checked={qrChecked}
-                    onChange={handleQrCheck}
+                    onChange={(e) => setQrChecked(e.target.checked)} // スイッチの状態を管理
                   />
                   <label className="form-check-label" htmlFor="flexSwitchCheckQR">
                     来店QRコードを読み取りました。
@@ -310,7 +283,7 @@ const App = () => {
                   placeholder="abc@stocklab.co.jp"
                   value={emailOrPhone}
                   onChange={(e) => setEmailOrPhone(e.target.value)}
-                  isInvalid={!!emailError} // エラーがあれば表示
+                  isInvalid={!!emailError}
                 />
                 {emailError && <Form.Control.Feedback type="invalid">{emailError}</Form.Control.Feedback>}
               </Form.Group>
@@ -324,7 +297,7 @@ const App = () => {
         <Button
           variant="primary"
           size="lg"
-          onClick={handleButtonClick}
+          onClick={updateSummary}
           disabled={temporaryAssessment === 'yes' && contactMethod === 'LINE' && !qrChecked}
         >
           一次請けメッセージを作ってコピーする
@@ -338,9 +311,9 @@ const App = () => {
         </Alert>
       }
 
-      {/* <Row className='mb-4'>
-        <div>{customerLink}</div>
-      </Row> */}
+      <Row className='mb-4'>
+        <div>{customerLink}</div> {/* 顧客候補リンクの出力 */}
+      </Row>
     </Container>
   );
 };
