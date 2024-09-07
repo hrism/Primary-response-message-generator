@@ -1,6 +1,6 @@
 {
   "name": "fc-message-generator",
-  "homepage": "http://hrism.github.io/Primary-response-message-generator",
+  "homepage": "https://hrism.github.io/Primary-response-message-generator",
   "version": "0.1.0",
   "private": true,
   "dependencies": {
@@ -18,7 +18,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "cross-env PUBLIC_URL=Primary-response-message-generator react-scripts build",
+    "build": "cross-env PUBLIC_URL=https://hrism.github.io/Primary-response-message-generator react-scripts build",
     "test": "react-scripts test",
     "deploy": "npm run build && gh-pages -d build",
     "eject": "react-scripts eject"
