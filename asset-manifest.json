@@ -1,15 +1,15 @@
 {
   "files": {
     "main.css": "https://hrism.github.io/Primary-response-message-generator/static/css/main.f96f07a4.css",
-    "main.js": "https://hrism.github.io/Primary-response-message-generator/static/js/main.78369299.js",
+    "main.js": "https://hrism.github.io/Primary-response-message-generator/static/js/main.76d45099.js",
     "static/js/787.90521d7e.chunk.js": "https://hrism.github.io/Primary-response-message-generator/static/js/787.90521d7e.chunk.js",
     "index.html": "https://hrism.github.io/Primary-response-message-generator/index.html",
     "main.f96f07a4.css.map": "https://hrism.github.io/Primary-response-message-generator/static/css/main.f96f07a4.css.map",
-    "main.78369299.js.map": "https://hrism.github.io/Primary-response-message-generator/static/js/main.78369299.js.map",
+    "main.76d45099.js.map": "https://hrism.github.io/Primary-response-message-generator/static/js/main.76d45099.js.map",
     "787.90521d7e.chunk.js.map": "https://hrism.github.io/Primary-response-message-generator/static/js/787.90521d7e.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.f96f07a4.css",
-    "static/js/main.78369299.js"
+    "static/js/main.76d45099.js"
   ]
 }
